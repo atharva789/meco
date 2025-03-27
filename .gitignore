@@ -1,1 +1,4 @@
 .env
+errors.txt
+sample.py
+__pycache__

@@ -1,10 +1,13 @@
 from typing import List, Dict
 from google import genai
-from google.generativeai.types import GenerationConfig
+from google.genai.types import GenerationConfig
 import os
 import json
 from pydantic import BaseModel
 from pyparser import CodeParser
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class StructuredOutput(BaseModel):
   dependencies: str
