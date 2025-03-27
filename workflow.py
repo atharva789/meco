@@ -54,10 +54,10 @@ class Workflow:
     try:
       with open('./test/function.py', 'w') as f:
         code_string = f""" 
-        import unittest
-        {function}
+import unittest
+{function}
         
-        {test_cases}
+{test_cases}
         """
         f.write(code_string)
 
@@ -172,7 +172,11 @@ class Workflow:
     
     for i in range(num_iterations):
       functions = self.optimizer_agent.optimize_code(current_function)
-      func_one, func_two, func_three = functions["solution_one"], functions["solution_two"], functions["solution_three"]
+      print(f"""
+Optimied functions: 
+{functions}
+            """)
+      func_one, func_two, func_three = functions.solution_one, functions.solution_two, functions.solution_three
       metrics_one, metrics_two, metrics_three = self.get_metrics(func_one), self.get_metrics(func_two), self.get_metrics(func_three)
       
       res_one = self.compare_metrics(metrics_one, metrics_two)
