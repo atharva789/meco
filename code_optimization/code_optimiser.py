@@ -1,30 +1,10 @@
-from typing import List, Dict
 from google import genai
-from google.genai.types import GenerationConfig
-from google.genai import types
 import os
 import json
-from pydantic import BaseModel
-from pyparser import CodeParser
 from dotenv import load_dotenv
+from code_optimization.Models.models import StructuredOutput, TestCase
 
 load_dotenv()
-
-class StructuredOutput(BaseModel):
-  dependencies: str
-  solution_one: str
-  solution_two: str
-  solution_three: str
-  unit_tests: List[str]
-  
-class FunctionInputFormat(BaseModel):
-  input_value: str
-  data_type: str 
-  
-class TestCase(BaseModel):
-  lamda_func_inputs: List[FunctionInputFormat]
-  expected_outputs: str
-  
   
 class CodeOptimizer:
   def __init__(self):
@@ -58,9 +38,10 @@ class CodeOptimizer:
   
   def generate_test_cases(self, code: str) -> str:
     sys_instruct = """
-    Generate test-cases with inputs that will be fed to the test-function.
-    Write a test-case class using the  python 'unittest' library. 
-    code-only
+    Write a test-case class using the python 'unittest' library for the given function. 
+    The function lies in 'solutions.py', so imports should follow the style
+    'from solutions import ##replace/w/function_name'. Do not write "if __name__ == '__main__'", class only.
+    Write code-only
     """
     prompt = code    
     try:
@@ -73,10 +54,18 @@ class CodeOptimizer:
         'system_instruction': sys_instruct
       }
       )
-      return response.text
+      try:
+        json_data = json.loads(response.text)
+        validated_data = TestCase(**json_data)
+        return validated_data
+      except json.JSONDecodeError:
+        print("""
+Code Optimizer Agent:
+    failed to create TestCase class""")
+        return response.text
     #xceptions to handle: APIConnectionError, RateLimitError, APIStatusError
     except Exception as e:
-      print(f"An unexpected error occurred: {e}")
+      print(f"Error with Gemini + test-case generation: {e}")
     
   
   
